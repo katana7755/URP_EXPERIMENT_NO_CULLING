@@ -210,6 +210,7 @@ namespace UnityEngine.Rendering.Universal
         [SerializeField] ShadowResolution m_ShadowAtlasResolution = ShadowResolution._256;
 
         [SerializeField] ShaderVariantLogLevel m_ShaderVariantLogLevel = ShaderVariantLogLevel.Disabled;
+        [SerializeField] public bool _UTKCustomized = false;
 
         // Note: A lut size of 16^3 is barely usable with the HDR grading mode. 32 should be the
         // minimum, the lut being encoded in log. Lower sizes would work better with an additional

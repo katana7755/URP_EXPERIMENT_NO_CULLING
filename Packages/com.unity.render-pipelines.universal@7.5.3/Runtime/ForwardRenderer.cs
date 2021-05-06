@@ -135,10 +135,12 @@ namespace UnityEngine.Rendering.Universal
         /// <inheritdoc />
         public override void Setup(ScriptableRenderContext context, ref RenderingData renderingData)
         {
+            bool NotUTKcustomized = !UniversalRenderPipeline.asset._UTKCustomized;
+
 #if ADAPTIVE_PERFORMANCE_2_1_0_OR_NEWER
             bool needTransparencyPass = !UniversalRenderPipeline.asset.useAdaptivePerformance || !AdaptivePerformance.AdaptivePerformanceRenderSettings.SkipTransparentObjects;
 #endif
-            Camera camera = renderingData.cameraData.camera;
+                Camera camera = renderingData.cameraData.camera;
             ref CameraData cameraData = ref renderingData.cameraData;
             RenderTextureDescriptor cameraTargetDescriptor = renderingData.cameraData.cameraTargetDescriptor;
 
@@ -154,13 +156,21 @@ namespace UnityEngine.Rendering.Universal
                         rendererFeatures[i].AddRenderPasses(this, ref renderingData);
                 }
 
-                EnqueuePass(m_RenderOpaqueForwardPass);
+                if (NotUTKcustomized)
+                {
+                    EnqueuePass(m_RenderOpaqueForwardPass);
+                }
+                    
                 EnqueuePass(m_DrawSkyboxPass);
 #if ADAPTIVE_PERFORMANCE_2_1_0_OR_NEWER
                 if (!needTransparencyPass)
                     return;
 #endif
-                EnqueuePass(m_RenderTransparentForwardPass);
+                if (NotUTKcustomized)
+                {
+                    EnqueuePass(m_RenderTransparentForwardPass);
+                }
+
                 return;
             }
 
@@ -266,16 +276,19 @@ namespace UnityEngine.Rendering.Universal
             }
             bool hasPassesAfterPostProcessing = activeRenderPassQueue.Find(x => x.renderPassEvent == RenderPassEvent.AfterRendering) != null;
 
-            if (mainLightShadows)
-                EnqueuePass(m_MainLightShadowCasterPass);
-
-            if (additionalLightShadows)
-                EnqueuePass(m_AdditionalLightsShadowCasterPass);
-
-            if (requiresDepthPrepass)
+            if (NotUTKcustomized)
             {
-                m_DepthPrepass.Setup(cameraTargetDescriptor, m_DepthTexture);
-                EnqueuePass(m_DepthPrepass);
+                if (mainLightShadows)
+                    EnqueuePass(m_MainLightShadowCasterPass);
+
+                if (additionalLightShadows)
+                    EnqueuePass(m_AdditionalLightsShadowCasterPass);
+
+                if (requiresDepthPrepass)
+                {
+                    m_DepthPrepass.Setup(cameraTargetDescriptor, m_DepthTexture);
+                    EnqueuePass(m_DepthPrepass);
+                }
             }
 
             if (generateColorGradingLUT)
@@ -284,7 +297,11 @@ namespace UnityEngine.Rendering.Universal
                 EnqueuePass(m_ColorGradingLutPass);
             }
 
-            EnqueuePass(m_RenderOpaqueForwardPass);
+            if (NotUTKcustomized)
+            {
+                EnqueuePass(m_RenderOpaqueForwardPass);
+            }
+             
 
 #if POST_PROCESSING_STACK_2_0_0_OR_NEWER
 #pragma warning disable 0618 // Obsolete
@@ -331,7 +348,10 @@ namespace UnityEngine.Rendering.Universal
                     EnqueuePass(m_TransparentSettingsPass);
                 }
 
-                EnqueuePass(m_RenderTransparentForwardPass);
+                if (NotUTKcustomized)
+                {
+                    EnqueuePass(m_RenderTransparentForwardPass);
+                }
             }
             EnqueuePass(m_OnRenderObjectCallbackPass);
 
@@ -462,6 +482,11 @@ namespace UnityEngine.Rendering.Universal
         /// <inheritdoc />
         public override void SetupLights(ScriptableRenderContext context, ref RenderingData renderingData)
         {
+            if (UniversalRenderPipeline.asset._UTKCustomized)
+            {
+                return;
+            }
+
             m_ForwardLights.Setup(context, ref renderingData);
         }
 

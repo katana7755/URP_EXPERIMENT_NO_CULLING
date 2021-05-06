@@ -258,7 +258,9 @@ namespace UnityEngine.Rendering.Universal
                 return;
             }
 
-            if (!camera.TryGetCullingParameters(IsStereoEnabled(camera), out var cullingParameters))
+            var cullingParameters = new ScriptableCullingParameters();
+
+            if (!asset._UTKCustomized && !camera.TryGetCullingParameters(IsStereoEnabled(camera), out cullingParameters))
                 return;
 
             ScriptableRenderer.current = renderer;
@@ -269,7 +271,12 @@ namespace UnityEngine.Rendering.Universal
             using (new ProfilingScope(cmd, sampler))
             {
                 renderer.Clear(cameraData.renderType);
-                renderer.SetupCullingParameters(ref cullingParameters, ref cameraData);
+
+                if (!asset._UTKCustomized)
+                {
+                    renderer.SetupCullingParameters(ref cullingParameters, ref cameraData);
+                }
+                    
 
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
@@ -281,8 +288,13 @@ namespace UnityEngine.Rendering.Universal
                     ScriptableRenderContext.EmitWorldGeometryForSceneView(camera);
                 }
 #endif
+                var cullResults = new CullingResults();
 
-                var cullResults = context.Cull(ref cullingParameters);
+                if (!asset._UTKCustomized)
+                {
+                    cullResults = context.Cull(ref cullingParameters);
+                }
+
                 InitializeRenderingData(asset, ref cameraData, ref cullResults, anyPostProcessingEnabled, out var renderingData);
 
 #if ADAPTIVE_PERFORMANCE_2_0_0_OR_NEWER
@@ -738,10 +750,17 @@ namespace UnityEngine.Rendering.Universal
             cameraData.SetViewAndProjectionMatrix(camera.worldToCameraMatrix, projectionMatrix);
         }
 
+        static NativeArray<VisibleLight> s_EmptyVisibleLights = new NativeArray<VisibleLight>();
+
         static void InitializeRenderingData(UniversalRenderPipelineAsset settings, ref CameraData cameraData, ref CullingResults cullResults,
             bool anyPostProcessingEnabled, out RenderingData renderingData)
         {
-            var visibleLights = cullResults.visibleLights;
+            var visibleLights = s_EmptyVisibleLights;
+
+            if (!settings._UTKCustomized)
+            {
+                visibleLights = cullResults.visibleLights;
+            }
 
             int mainLightIndex = GetMainLightIndex(settings, visibleLights);
             bool mainLightCastShadows = false;

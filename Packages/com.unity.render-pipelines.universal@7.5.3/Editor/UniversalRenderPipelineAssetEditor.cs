@@ -75,6 +75,9 @@ namespace UnityEditor.Rendering.Universal
             // Adaptive performance settings
             public static GUIContent useAdaptivePerformance = EditorGUIUtility.TrTextContent("Use adaptive performance", "Allows Adaptive Performance to adjust rendering quality during runtime");
 
+            // UTK Custom settings
+            public static GUIContent UTKCustomized = EditorGUIUtility.TrTextContent("UTK Customized", "No culling and rely on CustomRenderManager");
+
             // Renderer List Messages
             public static GUIContent rendererListDefaultMessage =
                 EditorGUIUtility.TrTextContent("Cannot remove Default Renderer",
@@ -143,6 +146,8 @@ namespace UnityEditor.Rendering.Universal
         SerializedProperty m_ColorGradingLutSize;
 
         SerializedProperty m_UseAdaptivePerformance;
+
+        SerializedProperty m_UTKCustomized;
 
         public override void OnInspectorGUI()
         {
@@ -215,6 +220,8 @@ namespace UnityEditor.Rendering.Universal
             m_ColorGradingLutSize = serializedObject.FindProperty("m_ColorGradingLutSize");
 
             m_UseAdaptivePerformance = serializedObject.FindProperty("m_UseAdaptivePerformance");
+
+            m_UTKCustomized = serializedObject.FindProperty("_UTKCustomized");
 
             selectedLightRenderingMode = (LightRenderingMode)m_AdditionalLightsRenderingModeProp.intValue;
         }
@@ -407,6 +414,7 @@ namespace UnityEditor.Rendering.Universal
                 EditorGUILayout.PropertyField(m_MixedLightingSupportedProp, Styles.mixedLightingSupportLabel);
                 EditorGUILayout.PropertyField(m_DebugLevelProp, Styles.debugLevel);
                 EditorGUILayout.PropertyField(m_ShaderVariantLogLevel, Styles.shaderVariantLogLevel);
+                EditorGUILayout.PropertyField(m_UTKCustomized, Styles.UTKCustomized);
                 EditorGUI.indentLevel--;
                 EditorGUILayout.Space();
                 EditorGUILayout.Space();
